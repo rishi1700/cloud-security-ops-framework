@@ -1,0 +1,15 @@
+# Terraform
+*.tfstate
+*.tfstate.backup
+.terraform/
+
+# Lambda packages and temp files
+*.zip
+response.json
+test-event.json
+
+# OS and Python
+__pycache__/
+.DS_Store
+*.pyc
+.terraform/
