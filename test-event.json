@@ -1,0 +1,13 @@
+{
+  "detail": {
+    "eventName": "AttachUserPolicy",
+    "userIdentity": {
+      "arn": "arn:aws:iam::219257094456:user/insecure-admin"
+    },
+    "requestParameters": {
+      "userName": "insecure-admin"
+    }
+  },
+  "source": "aws.iam",
+  "detail-type": "AWS API Call via CloudTrail"
+}
