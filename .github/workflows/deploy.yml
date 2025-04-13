@@ -37,6 +37,11 @@ jobs:
           terraform -chdir=phase2-iam-security-services init -input=false
           terraform -chdir=phase2-iam-security-services fmt -recursive
           terraform -chdir=phase2-iam-security-services validate
+          
+      - name: 📦 Zip Lambda function code
+        run: |
+          cd $LAMBDA_DIR
+          zip -r9 ../$LAMBDA_ZIP .
 
       - name: 🎟️ Init & Validate Terraform - Phase 3
         run: |
@@ -52,11 +57,6 @@ jobs:
       - name: 💡 Install dependencies (if any)
         run: |
           pip install boto3
-
-      - name: 📦 Zip Lambda function code
-        run: |
-          cd $LAMBDA_DIR
-          zip -r9 ../$LAMBDA_ZIP .
 
       - name: 🔐 Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
