@@ -50,7 +50,7 @@ jobs:
       - name: 📦 Zip Lambda function code
         run: |
           cd $LAMBDA_DIR
-          zip -r9 ../$LAMBDA_ZIP .
+          zip -r9 $LAMBDA_ZIP .
 
       - name: 🎟️ Init & Validate Terraform - Phase 3
         run: |
