@@ -18,7 +18,7 @@ jobs:
       FUNCTION_NAME: auto-remediate-v2
 
     steps:
-      - name: 💾 Checkout code
+      - name: 📂 Checkout code
         uses: actions/checkout@v3
 
       - name: ⚙️ Install Terraform
@@ -37,7 +37,16 @@ jobs:
           terraform -chdir=phase2-iam-security-services init -input=false
           terraform -chdir=phase2-iam-security-services fmt -recursive
           terraform -chdir=phase2-iam-security-services validate
-          
+
+      - name: 📙 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: 💡 Install dependencies (if any)
+        run: |
+          pip install boto3
+
       - name: 📦 Zip Lambda function code
         run: |
           cd $LAMBDA_DIR
@@ -48,15 +57,6 @@ jobs:
           terraform -chdir=phase3-threat-detection-response init -input=false
           terraform -chdir=phase3-threat-detection-response fmt -recursive
           terraform -chdir=phase3-threat-detection-response validate
-
-      - name: 📚 Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-
-      - name: 💡 Install dependencies (if any)
-        run: |
-          pip install boto3
 
       - name: 🔐 Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
