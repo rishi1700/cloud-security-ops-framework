@@ -2,9 +2,9 @@ name: CI/CD - Cloud Security Ops Framework
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   validate-and-deploy:
@@ -18,15 +18,33 @@ jobs:
       FUNCTION_NAME: auto-remediate-v2
 
     steps:
-      - name: 🧾 Checkout code
+      - name: 💾 Checkout code
         uses: actions/checkout@v3
 
       - name: ⚙️ Install Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.6
-          
-      - name: 🔧 Set up Python
+
+      - name: 🎟️ Init & Validate Terraform - Phase 1
+        run: |
+          terraform -chdir=phase1-infra-logging init -input=false
+          terraform -chdir=phase1-infra-logging fmt -recursive
+          terraform -chdir=phase1-infra-logging validate
+
+      - name: 🎟️ Init & Validate Terraform - Phase 2
+        run: |
+          terraform -chdir=phase2-iam-security-services init -input=false
+          terraform -chdir=phase2-iam-security-services fmt -recursive
+          terraform -chdir=phase2-iam-security-services validate
+
+      - name: 🎟️ Init & Validate Terraform - Phase 3
+        run: |
+          terraform -chdir=phase3-threat-detection-response init -input=false
+          terraform -chdir=phase3-threat-detection-response fmt -recursive
+          terraform -chdir=phase3-threat-detection-response validate
+
+      - name: 📚 Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
@@ -34,15 +52,6 @@ jobs:
       - name: 💡 Install dependencies (if any)
         run: |
           pip install boto3
-
-      - name: 🧼 Format & validate Terraform
-        run: |
-          terraform -chdir=phase1-infra-logging fmt -recursive
-          terraform -chdir=phase1-infra-logging validate
-          terraform -chdir=phase2-iam-security-services fmt -recursive
-          terraform -chdir=phase2-iam-security-services validate
-          terraform -chdir=phase3-threat-detection-response fmt -recursive
-          terraform -chdir=phase3-threat-detection-response validate
 
       - name: 📦 Zip Lambda function code
         run: |
@@ -61,4 +70,3 @@ jobs:
           aws lambda update-function-code \
             --function-name $FUNCTION_NAME \
             --zip-file fileb://phase3-threat-detection-response/$LAMBDA_ZIP
-
