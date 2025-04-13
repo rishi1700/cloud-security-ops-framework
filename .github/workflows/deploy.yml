@@ -1,0 +1,59 @@
+name: CI/CD - Cloud Security Ops Framework
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  validate-and-deploy:
+    name: Validate, Build & Deploy
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: us-east-1
+      LAMBDA_DIR: phase3-threat-detection-response/lambda
+      LAMBDA_ZIP: auto_remediate.zip
+      FUNCTION_NAME: auto-remediate-v2
+
+    steps:
+      - name: 🧾 Checkout code
+        uses: actions/checkout@v3
+
+      - name: 🔧 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: 💡 Install dependencies (if any)
+        run: |
+          pip install boto3
+
+      - name: 🧼 Format & validate Terraform
+        run: |
+          terraform -chdir=phase1-infra-logging fmt -recursive
+          terraform -chdir=phase1-infra-logging validate
+          terraform -chdir=phase2-iam-security-services fmt -recursive
+          terraform -chdir=phase2-iam-security-services validate
+          terraform -chdir=phase3-threat-detection-response fmt -recursive
+          terraform -chdir=phase3-threat-detection-response validate
+
+      - name: 📦 Zip Lambda function code
+        run: |
+          cd $LAMBDA_DIR
+          zip -r9 ../$LAMBDA_ZIP .
+
+      - name: 🔐 Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: 🚀 Deploy Lambda Code
+        run: |
+          aws lambda update-function-code \
+            --function-name $FUNCTION_NAME \
+            --zip-file fileb://phase3-threat-detection-response/$LAMBDA_ZIP
+
