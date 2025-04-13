@@ -69,4 +69,4 @@ jobs:
         run: |
           aws lambda update-function-code \
             --function-name $FUNCTION_NAME \
-            --zip-file fileb://phase3-threat-detection-response/$LAMBDA_ZIP
+            --zip-file fileb://$LAMBDA_DIR/$LAMBDA_ZIP
