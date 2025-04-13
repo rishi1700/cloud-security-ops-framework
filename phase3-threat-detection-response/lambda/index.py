@@ -1,44 +1,35 @@
-import boto3
 import json
+import boto3
 import os
-
-sns_client = boto3.client('sns')
+from playbooks.remediate_s3 import handle_s3_public_access
+from playbooks.remediate_admin import handle_admin_policy_attach
+from playbooks.remediate_guardduty import handle_guardduty_finding
 
 def lambda_handler(event, context):
     print("📥 Event received:")
+    print("📦 DEBUG: Event Source =", event.get("source", "unknown"))
+    print("📦 DEBUG: Detail-Type =", event.get("detail-type", "unknown"))
+    print("📦 DEBUG: Full Event:")
     print(json.dumps(event, indent=2))
 
+    detail_type = event.get("detail-type", "")
+    source = event.get("source", "")
+    detail = event.get("detail", {})
+
     try:
-        detail = event.get('detail', {})
-        event_name = detail.get('eventName', 'UnknownEvent')
-        user_identity = detail.get('userIdentity', {}).get('arn', 'UnknownUser')
-        target = detail.get('requestParameters', {}).get('userName') or 'UnknownTarget'
-
-        message = f"""
-🚨 Security Alert Detected 🚨
-
-Event: {event_name}
-User: {user_identity}
-Target: {target}
-
-Raw Event:
-{json.dumps(event, indent=2)}
-        """
-
-        print("📤 Sending alert via SNS...")
-
-        sns_client.publish(
-            TopicArn=os.environ['SNS_TOPIC_ARN'],
-            Subject=f"[ALERT] IAM Policy Change Detected: {event_name}",
-            Message=message
-        )
-
-        print("✅ Alert sent successfully.")
+        if source == "aws.iam" and "AttachUserPolicy" in detail.get("eventName", ""):
+            return handle_admin_policy_attach(detail)
+        
+        elif source == "aws.s3" and detail.get("eventName") in ["PutBucketAcl", "PutBucketPolicy"]:
+            return handle_s3_public_access(detail)
+        
+        elif source == "aws.guardduty" and detail_type == "GuardDuty Finding":
+            return handle_guardduty_finding(detail)
+        
+        else:
+            print("❌ No remediation playbook matched.")
+            return {"statusCode": 200, "body": "No remediation needed."}
 
     except Exception as e:
-        print(f"❌ Error: {str(e)}")
-
-    return {
-        'statusCode': 200,
-        'body': 'Execution completed.'
-    }
+        print(f"❌ Error during remediation: {e}")
+        return {"statusCode": 500, "body": str(e)}

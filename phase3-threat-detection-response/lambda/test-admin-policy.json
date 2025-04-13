@@ -1,0 +1,18 @@
+{
+    "version": "0",
+    "id": "test-event-id-456",
+    "detail-type": "AWS API Call via CloudTrail",
+    "source": "aws.iam",
+    "region": "us-east-1",
+    "detail": {
+      "eventName": "AttachUserPolicy",
+      "userIdentity": {
+        "arn": "arn:aws:iam::123456789012:user/insecure-admin"
+      },
+      "requestParameters": {
+        "userName": "insecure-admin",
+        "policyArn": "arn:aws:iam::aws:policy/AdministratorAccess"
+      }
+    }
+  }
+  

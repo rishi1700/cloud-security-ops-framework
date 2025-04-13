@@ -1,0 +1,18 @@
+{
+    "version": "0",
+    "id": "test-event-id-789",
+    "source": "aws.guardduty",
+    "account": "123456789012",
+    "detail-type": "GuardDuty Finding",
+    "region": "us-east-1",
+    "detail": {
+      "type": "UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration",
+      "resource": {
+        "resourceType": "AccessKey",
+        "accessKeyDetails": {
+          "userName": "insecure-admin"
+        }
+      }
+    }
+  }
+  

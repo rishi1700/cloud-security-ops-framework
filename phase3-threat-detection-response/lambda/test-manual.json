@@ -1,0 +1,7 @@
+{
+  "source": "manual.test",
+  "detail-type": "Manual Test Event",
+  "detail": {
+    "bucketName": "test-debug-bucket"
+  }
+}
