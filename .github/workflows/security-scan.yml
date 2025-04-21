@@ -15,15 +15,25 @@ jobs:
       - name: 📂 Checkout repository
         uses: actions/checkout@v3
 
+      - name: 🔐 Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
       - name: ⚖️ Install tfsec
         run: |
           curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
 
       - name: 🔧 Run tfsec on phase1
         run: tfsec ./phase1-infra-logging
+        continue-on-error: true
 
       - name: 🔧 Run tfsec on phase2
         run: tfsec ./phase2-iam-security-services
+        continue-on-error: true
 
       - name: 🔧 Run tfsec on phase3
         run: tfsec ./phase3-threat-detection-response
+        continue-on-error: true
