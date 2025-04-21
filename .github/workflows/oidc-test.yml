@@ -1,27 +1,21 @@
-name: OIDC Role Assumption Test
+name: Test OIDC Assumption
 
 on:
   workflow_dispatch:
 
 jobs:
-  test-oidc:
-    name: Test GitHub OIDC Role Assumption
+  oidc-test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📂 Checkout code
+      - name: Checkout
         uses: actions/checkout@v3
 
-      - name: 🔐 Configure AWS Credentials (OIDC)
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: us-east-1
 
-      - name: 🧪 Test AWS Identity
-        run: |
-          echo "🔎 Verifying identity with AWS STS..."
-          aws sts get-caller-identity || echo "❌ Failed to assume role via OIDC"
-
-      - name: ✅ Completion Status
-        run: echo "✅ OIDC Role Assumption Test completed. Check logs above for details."
+      - name: Run STS Identity Check
+        run: aws sts get-caller-identity
