@@ -68,7 +68,7 @@ jobs:
         continue-on-error: true
 
       - name: 📄 Upload Terraform Validate Reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3.1.2
         with:
           name: terraform-validation-reports
           path: |
