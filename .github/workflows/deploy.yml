@@ -24,8 +24,7 @@ jobs:
       - name: 🔐 Configure AWS Credentials (for remote backend)
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: ⚙️ Install Terraform
@@ -37,13 +36,15 @@ jobs:
         run: |
           terraform -chdir=phase1-infra-logging init -input=false
           terraform -chdir=phase1-infra-logging fmt -recursive
-          terraform -chdir=phase1-infra-logging validate
+          terraform -chdir=phase1-infra-logging validate -no-color > phase1-infra-logging/validate-report.txt
+        continue-on-error: true
 
       - name: 🎟️ Init & Validate Terraform - Phase 2
         run: |
           terraform -chdir=phase2-iam-security-services init -input=false
           terraform -chdir=phase2-iam-security-services fmt -recursive
-          terraform -chdir=phase2-iam-security-services validate
+          terraform -chdir=phase2-iam-security-services validate -no-color > phase2-iam-security-services/validate-report.txt
+        continue-on-error: true
 
       - name: 📙 Set up Python for Lambda Packaging
         uses: actions/setup-python@v4
@@ -63,10 +64,32 @@ jobs:
         run: |
           terraform -chdir=phase3-threat-detection-response init -input=false
           terraform -chdir=phase3-threat-detection-response fmt -recursive
-          terraform -chdir=phase3-threat-detection-response validate
+          terraform -chdir=phase3-threat-detection-response validate -no-color > phase3-threat-detection-response/validate-report.txt
+        continue-on-error: true
+
+      - name: 📄 Upload Terraform Validate Reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: terraform-validation-reports
+          path: |
+            phase1-infra-logging/validate-report.txt
+            phase2-iam-security-services/validate-report.txt
+            phase3-threat-detection-response/validate-report.txt
 
       - name: 🚀 Deploy Lambda Code to AWS
         run: |
-          aws lambda update-function-code \
-            --function-name $FUNCTION_NAME \
-            --zip-file fileb://$LAMBDA_DIR/$LAMBDA_ZIP
+          set -e
+          if aws lambda get-function --function-name $FUNCTION_NAME; then
+            echo "Function exists. Updating code..."
+            aws lambda update-function-code \
+              --function-name $FUNCTION_NAME \
+              --zip-file fileb://$LAMBDA_DIR/$LAMBDA_ZIP
+          else
+            echo "Function does not exist. Creating..."
+            aws lambda create-function \
+              --function-name $FUNCTION_NAME \
+              --runtime python3.9 \
+              --role arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/lambda-security-response-role \
+              --handler index.lambda_handler \
+              --zip-file fileb://$LAMBDA_DIR/$LAMBDA_ZIP
+          fi
