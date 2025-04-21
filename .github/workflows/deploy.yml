@@ -21,6 +21,13 @@ jobs:
       - name: 📂 Checkout code
         uses: actions/checkout@v3
 
+      - name: 🔐 Configure AWS Credentials (for remote backend)
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
       - name: ⚙️ Install Terraform
         uses: hashicorp/setup-terraform@v3
         with:
@@ -38,12 +45,12 @@ jobs:
           terraform -chdir=phase2-iam-security-services fmt -recursive
           terraform -chdir=phase2-iam-security-services validate
 
-      - name: 📙 Set up Python
+      - name: 📙 Set up Python for Lambda Packaging
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      - name: 💡 Install dependencies (if any)
+      - name: 💡 Install Lambda Dependencies (if any)
         run: |
           pip install boto3
 
@@ -58,14 +65,7 @@ jobs:
           terraform -chdir=phase3-threat-detection-response fmt -recursive
           terraform -chdir=phase3-threat-detection-response validate
 
-      - name: 🔐 Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: 🚀 Deploy Lambda Code
+      - name: 🚀 Deploy Lambda Code to AWS
         run: |
           aws lambda update-function-code \
             --function-name $FUNCTION_NAME \
