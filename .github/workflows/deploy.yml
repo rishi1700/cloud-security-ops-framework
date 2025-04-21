@@ -72,9 +72,9 @@ jobs:
         with:
           name: terraform-validation-reports
           path: |
-            ./phase1-infra-logging/validate-report.txt
-            ./phase2-iam-security-services/validate-report.txt
-            ./phase3-threat-detection-response/validate-report.txt
+            phase1-infra-logging/validate-report.txt
+            phase2-iam-security-services/validate-report.txt
+            phase3-threat-detection-response/validate-report.txt
 
       - name: 🚀 Deploy Lambda Code to AWS
         run: |
