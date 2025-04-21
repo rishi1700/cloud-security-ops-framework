@@ -1,12 +1,11 @@
-name: Test OIDC Assumption
+name: OIDC Assume Role Test
 
 on:
   workflow_dispatch:
 
 jobs:
-  oidc-test:
+  test-oidc:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -17,5 +16,5 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: us-east-1
 
-      - name: Run STS Identity Check
+      - name: Test AWS Identity
         run: aws sts get-caller-identity
