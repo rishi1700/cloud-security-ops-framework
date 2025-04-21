@@ -1,0 +1,29 @@
+name: Security Scan - Terraform
+
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+
+jobs:
+  tfsec-scan:
+    name: Run tfsec on all phases
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📂 Checkout repository
+        uses: actions/checkout@v3
+
+      - name: ⚖️ Install tfsec
+        run: |
+          curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
+
+      - name: 🔧 Run tfsec on phase1
+        run: tfsec ./phase1-infra-logging
+
+      - name: 🔧 Run tfsec on phase2
+        run: tfsec ./phase2-iam-security-services
+
+      - name: 🔧 Run tfsec on phase3
+        run: tfsec ./phase3-threat-detection-response
