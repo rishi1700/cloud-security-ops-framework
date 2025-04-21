@@ -32,6 +32,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: 📦 Zip Lambda function code
+        run: |
+          cd ${{ github.event.inputs.phase }}/lambda
+          zip -r9 auto_remediate.zip .
+
       - name: ✏️ Terraform Init
         run: |
           terraform -chdir=${{ github.event.inputs.phase }} init -input=false
