@@ -7,3 +7,4 @@
 
 # Local Terraform dir
 .terraform/
+.terraform/

@@ -1,0 +1,45 @@
+name: Terraform Apply - Secure Manual Trigger
+
+on:
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: "Terraform Phase to Apply"
+        required: true
+        default: "phase3-threat-detection-response"
+
+jobs:
+  secure-terraform-apply:
+    name: Secure Terraform Apply
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: us-east-1
+
+    steps:
+      - name: 📂 Checkout code
+        uses: actions/checkout@v3
+
+      - name: ⚙️ Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name: 🔐 Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: ✏️ Terraform Init
+        run: |
+          terraform -chdir=${{ github.event.inputs.phase }} init -input=false
+
+      - name: 📅 Terraform Plan
+        run: |
+          terraform -chdir=${{ github.event.inputs.phase }} plan -out=tfplan
+
+      - name: 🚀 Terraform Apply (auto-approved)
+        run: |
+          terraform -chdir=${{ github.event.inputs.phase }} apply -auto-approve tfplan
