@@ -93,6 +93,3 @@ jobs:
               --handler index.lambda_handler \
               --zip-file fileb://$LAMBDA_DIR/$LAMBDA_ZIP
           fi
-
-      - name: 📄 Ensure Upload Artifact Action is Available
-        uses: actions/download-artifact@v3
