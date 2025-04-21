@@ -27,6 +27,14 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: 🧪 Dump GitHub OIDC Token (diagnostics)
+        run: |
+          echo "Fetching GitHub OIDC Token..."
+          curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq
+        env:
+          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTIONS_ID_TOKEN_REQUEST_URL: ${{ secrets.ACTIONS_ID_TOKEN_REQUEST_URL }}          
+
       - name: 🔍 Debug AWS Caller Identity
         run: |
           aws sts get-caller-identity || echo "Unable to retrieve identity"
