@@ -27,6 +27,10 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: 🔍 Debug AWS Caller Identity
+        run: |
+          aws sts get-caller-identity || echo "Unable to retrieve identity"
+
       - name: ⚙️ Install Terraform
         uses: hashicorp/setup-terraform@v3
         with:
