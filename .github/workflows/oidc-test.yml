@@ -1,13 +1,22 @@
-name: Test GitHub OIDC Identity Token
+name: test
 
 on:
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
-  test:
+  debug-oidc:
+    name: 🔍 OIDC Debug
     runs-on: ubuntu-latest
+
     steps:
-      - name: Dump GitHub OIDC Token
+      - name: 📂 Checkout
+        uses: actions/checkout@v3
+
+      - name: 🪪 Dump GitHub OIDC Token
         run: |
           echo "Fetching GitHub OIDC Token..."
           curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq
